@@ -16,6 +16,8 @@ import {
     shouldFilterJoinLeavePost,
     comparePostTypes,
     isPostCommentMention,
+    getOldestPostIdFromPosts,
+    getNewestPostIdFromPosts,
 } from 'utils/post_utils';
 
 describe('PostUtils', () => {
@@ -1556,6 +1558,44 @@ describe('PostUtils', () => {
 
             const isCommentMention = isPostCommentMention({currentUser: modifiedCurrentUser, post, rootPost, threadRepliedToByCurrentUser: true});
             assert.equal(isCommentMention, true);
+        });
+    });
+
+    describe('getPostIdFromPosts', () => {
+        it('Should return oldest post from given posts', () => {
+            const posts = [{
+                id: '12345-1234',
+                user_id: 'someone',
+                create_at: 1532345226652,
+                type: 'system_combined_user_activity',
+                system_post_ids: ['123', '124'],
+            },
+            {
+                id: '12345-1235',
+                user_id: 'someone',
+                create_at: 1532345226652,
+                type: 'system_combined_user_activity',
+                system_post_ids: ['121', '122'],
+            }];
+            assert.equal(getOldestPostIdFromPosts(posts), '121');
+        });
+
+        it('Should return newest post from given posts', () => {
+            const posts = [{
+                id: '12345-1234',
+                user_id: 'someone',
+                create_at: 1532345226652,
+                type: 'system_combined_user_activity',
+                system_post_ids: ['123', '124'],
+            },
+            {
+                id: '12345-1235',
+                user_id: 'someone',
+                create_at: 1532345226652,
+                type: 'system_combined_user_activity',
+                system_post_ids: ['121', '122'],
+            }];
+            assert.equal(getNewestPostIdFromPosts(posts), '123');
         });
     });
 });

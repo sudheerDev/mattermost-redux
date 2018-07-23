@@ -209,7 +209,6 @@ export function makeGetPostsInChannel() {
 
             const joinLeavePref = myPreferences[getPreferenceKey(Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE)];
             const showJoinLeave = joinLeavePref ? joinLeavePref.value !== 'false' : true;
-
             for (let i = 0; i < postIds.length && i < numPosts; i++) {
                 const post = allPosts[postIds[i]];
 
@@ -244,24 +243,24 @@ export function makeGetPostsAroundPost() {
                 return null;
             }
 
-            const desiredPostIndexBefore = focusedPostIndex - (Posts.POST_CHUNK_SIZE / 2);
-            const minPostIndex = desiredPostIndexBefore < 0 ? 0 : desiredPostIndexBefore;
-
-            const slicedPostIds = postIds.slice(minPostIndex);
+            // const desiredPostIndexBefore = focusedPostIndex - (Posts.POST_CHUNK_SIZE / 2);
+            // const minPostIndex = desiredPostIndexBefore < 0 ? 0 : desiredPostIndexBefore;
+            //
+            // const slicedPostIds = postIds.slice(minPostIndex);
 
             const posts = [];
             const joinLeavePref = myPreferences[getPreferenceKey(Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE)];
             const showJoinLeave = joinLeavePref ? joinLeavePref.value !== 'false' : true;
 
-            for (let i = 0; i < slicedPostIds.length; i++) {
-                const post = allPosts[slicedPostIds[i]];
+            for (let i = 0; i < postIds.length; i++) {
+                const post = allPosts[postIds[i]];
 
                 if (shouldFilterJoinLeavePost(post, showJoinLeave, currentUser.username)) {
                     continue;
                 }
 
-                const previousPost = allPosts[slicedPostIds[i + 1]] || {create_at: 0};
-                const formattedPost = formatPostInChannel(post, previousPost, i, allPosts, postsInThread, slicedPostIds, currentUser);
+                const previousPost = allPosts[postIds[i + 1]] || {create_at: 0};
+                const formattedPost = formatPostInChannel(post, previousPost, i, allPosts, postsInThread, postIds, currentUser);
 
                 if (post.id === focusedPostId) {
                     formattedPost.highlight = true;
@@ -468,6 +467,13 @@ export const getCurrentUsersLatestPost = createSelector(
 export function getPostIdsInChannel(state, channelId) {
     return state.entities.posts.postsInChannel[channelId];
 }
+
+export const getbackUpPostIdsInChannel = createSelector(
+    (state, channelId) => state.entities.posts.postsInChannelBackup[channelId],
+    (postIdsInChannel) => {
+        return postIdsInChannel || [];
+    }
+);
 
 export const isPostIdSending = (state, postId) =>
     state.entities.posts.sendingPostIds.some((sendingPostId) => sendingPostId === postId);

@@ -66,6 +66,7 @@ export type PostsState = {|
     posts: IDMappedObjects<Post>,
     postsInChannel: RelationOneToMany<Channel, Post>,
     postsInThread: RelationOneToMany<Post, Post>,
+    postsInChannelBackup: {[string]: Array<string>},
     selectedPostId: string,
     currentFocusedPostId: string,
     messagesHistory: {|

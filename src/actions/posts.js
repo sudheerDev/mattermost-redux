@@ -5,8 +5,9 @@ import {batchActions} from 'redux-batched-actions';
 
 import {Client4} from 'client';
 import {General, Preferences, Posts} from 'constants';
+
 import {PostTypes, FileTypes, IntegrationTypes} from 'action_types';
-import {getUsersByUsername} from 'selectors/entities/users';
+import {getUsersByUsername, getCurrentUserId} from 'selectors/entities/users';
 import {getCustomEmojisByName as selectCustomEmojisByName} from 'selectors/entities/emojis';
 
 import * as Selectors from 'selectors/entities/posts';
@@ -653,6 +654,29 @@ export function getPostsWithRetry(channelId, page = 0, perPage = Posts.POST_CHUN
     };
 }
 
+export function getPostsUnread(channelId) {
+    return async (dispatch, getState) => {
+        const userId = getCurrentUserId(getState());
+        let posts;
+        try {
+            posts = await Client4.getPostsUnread(channelId, userId);
+            getProfilesAndStatusesForPosts(posts.posts, dispatch, getState);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(logError(error));
+            return {error};
+        }
+
+        dispatch({
+            type: PostTypes.RECEIVED_POSTS,
+            data: posts,
+            channelId,
+        });
+
+        return {data: posts};
+    };
+}
+
 export function getPostsSince(channelId, since) {
     return async (dispatch, getState) => {
         let posts;
@@ -1143,6 +1167,39 @@ export function moveHistoryIndexForward(index) {
     };
 }
 
+export function clearPostsFromChannel(channelId) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: PostTypes.CLEAR_CHANNEL_POSTS,
+            data: {channelId},
+        }, getState);
+
+        return {data: true};
+    };
+}
+
+export function restoreBackedUpPostIds(channelId, postIds) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: PostTypes.ADD_CHANNEL_POSTIDS,
+            data: {channelId, postIds},
+        }, getState);
+
+        return {data: true};
+    };
+}
+
+export function backUpPostsInChannel(channelId, postIds) {
+    return async (dispatch, getState) => {
+        dispatch({
+            type: PostTypes.BACKUP_CHANNEL_POSTIDS,
+            data: {channelId, postIds},
+        }, getState);
+
+        return {data: true};
+    };
+}
+
 export default {
     createPost,
     createPostImmediately,
@@ -1153,6 +1210,7 @@ export default {
     getPostThread,
     getPostThreadWithRetry,
     getPosts,
+    getPostsUnread,
     getPostsWithRetry,
     getPostsSince,
     getPostsSinceWithRetry,
@@ -1166,4 +1224,7 @@ export default {
     resetHistoryIndex,
     moveHistoryIndexBack,
     moveHistoryIndexForward,
+    clearPostsFromChannel,
+    restoreBackedUpPostIds,
+    backUpPostsInChannel,
 };

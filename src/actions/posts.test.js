@@ -1802,6 +1802,64 @@ describe('Actions.Posts', () => {
         assert.ok(index === 2);
     });
 
+    it('getPostsUnread', async () => {
+        const {dispatch, getState} = store;
+        const channelId = TestHelper.basicChannel.id;
+        const post = TestHelper.fakePostWithId(channelId);
+        const userId = getState().entities.users.currentUserId;
+        const response = {
+            posts: {
+                [post.id]: post,
+            },
+            order: [post.id],
+        };
+
+        nock(Client4.getUsersRoute()).
+            get(`/${userId}/channels/${channelId}/posts/unread`).
+            reply(200, response);
+
+        await Actions.getPostsUnread(channelId)(dispatch, getState);
+
+        const {posts} = getState().entities.posts;
+        assert.ok(posts[post.id]);
+    });
+
+    it('restoreBackedUpPostIds', async () => {
+        const {dispatch, getState} = store;
+        const channelId = TestHelper.basicChannel.id;
+        const postIds = ['testId'];
+        await Actions.restoreBackedUpPostIds(channelId, postIds)(dispatch, getState);
+
+        const {postsInChannel} = getState().entities.posts;
+        assert.ok(postsInChannel[channelId] === postIds);
+    });
+
+    it('clearPostsFromChannel', async () => {
+        let postsInChannel;
+        const {dispatch, getState} = store;
+        const channelId = TestHelper.basicChannel.id;
+        const postIds = ['testId'];
+        await Actions.restoreBackedUpPostIds(channelId, postIds)(dispatch, getState);
+
+        ({postsInChannel} = getState().entities.posts);
+        assert.ok(postsInChannel[channelId] === postIds);
+
+        await Actions.clearPostsFromChannel(channelId)(dispatch, getState);
+
+        ({postsInChannel} = getState().entities.posts);
+        assert.ok(!postsInChannel[channelId]);
+    });
+
+    it('backUpPostsInChannel', async () => {
+        const {dispatch, getState} = store;
+        const channelId = TestHelper.basicChannel.id;
+        const postIds = ['testId'];
+        await Actions.backUpPostsInChannel(channelId, postIds)(dispatch, getState);
+
+        const {postsInChannelBackup} = getState().entities.posts;
+        assert.ok(postsInChannelBackup[channelId] === postIds);
+    });
+
     describe('getProfilesAndStatusesForPosts', () => {
         describe('different values for posts argument', () => {
             // Mock the state to prevent any followup requests since we aren't testing those

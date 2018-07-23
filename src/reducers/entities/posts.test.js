@@ -146,6 +146,7 @@ describe('Reducers.posts', () => {
                 postsInThread: {},
                 pendingPostIds: ['other_post_id'],
                 sendingPostIds: [],
+                postsInChannelBackup: {},
             },
         };
 
@@ -187,6 +188,7 @@ describe('Reducers.posts', () => {
                     other_channel_id: ['other_post_id', 'other_post_id2'],
                     other_channel_more_id: ['other_post_more_id', 'other_post_more_id2'],
                 },
+                postsInChannelBackup: {},
                 postsInThread: {
                     other_post_id: ['other_post_more_id'],
                 },
@@ -228,6 +230,7 @@ describe('Reducers.posts', () => {
                 selectedPostId: '',
                 posts,
                 postsInChannel,
+                postsInChannelBackup: {},
                 postsInThread,
                 pendingPostIds: [],
                 sendingPostIds: [],
